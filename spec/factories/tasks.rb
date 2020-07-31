@@ -1,9 +1,9 @@
 FactoryBot.define do
   factory :task do
-    title { 'RUNTEQ' }
-    content { 'rspecの勉強' }
-    status { 'todo' }
-    deadline { 0 }
+    sequence(:title) { 'title_1' }
+    content { 'content' }
+    status { :todo }
+    deadline { 1.week.from_now }
     association :user
   end
 end
