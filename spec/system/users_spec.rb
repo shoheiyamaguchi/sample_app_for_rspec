@@ -28,6 +28,7 @@ RSpec.describe 'Users', type: :system do
             fill_in 'Password confirmation', with: user_with_blank_email.password_confirmation
             click_button 'SignUp'
             expect(current_path).to eq users_path
+            expect(page).to have_content '1 error prohibited this user from being saved'
             expect(page).to have_content "Email can't be blank"
           }.to change(User, :count).by(0)
         end
@@ -43,6 +44,7 @@ RSpec.describe 'Users', type: :system do
             fill_in 'Password confirmation', with: user_with_duplicate_email.password_confirmation
             click_button 'SignUp'
             expect(current_path).to eq users_path
+            expect(page).to have_content '1 error prohibited this user from being saved'
             expect(page).to have_content 'Email has already been taken'
           }.to change(User, :count).by(0)
         end
@@ -75,6 +77,7 @@ RSpec.describe 'Users', type: :system do
           fill_in 'Password confirmation', with: 'updated_password'
           click_button 'Update'
           expect(current_path).to eq user_path(user)
+          expect(page).to have_content('User was successfully updated.')
         end
       end
 
@@ -83,8 +86,11 @@ RSpec.describe 'Users', type: :system do
           visit edit_user_path(user)
           expect(page).to have_field 'Email', with: user.email
           fill_in 'Email', with: ''
+          fill_in 'Password', with: 'password'
+          fill_in 'Password confirmation', with: 'password'
           click_button 'Update'
           expect(current_path).to eq user_path(user)
+          expect(page).to have_content('1 error prohibited this user from being saved')
           expect(page).to have_content "Email can't be blank"
         end
       end
@@ -95,8 +101,11 @@ RSpec.describe 'Users', type: :system do
           visit edit_user_path(user)
           expect(page).to have_field 'Email', with: user.email
           fill_in 'Email', with: another_user.email
+          fill_in 'Password', with: 'password'
+          fill_in 'Password confirmation', with: 'password'
           click_button 'Update'
           expect(current_path).to eq user_path(user)
+          expect(page).to have_content('1 error prohibited this user from being saved')
           expect(page).to have_content 'Email has already been taken'
         end
       end
@@ -105,6 +114,7 @@ RSpec.describe 'Users', type: :system do
         it '編集ページへのアクセスが失敗する' do
           another_user = create(:user)
           visit edit_user_path(another_user)
+          expect(current_path).to eq user_path(user)
           expect(page).to have_content 'Forbidden access.'
         end
       end
@@ -115,10 +125,14 @@ RSpec.describe 'Users', type: :system do
         it '新規作成したタスクが表示される' do
           task = create(:task, user: user)
           visit user_path user.id
+          expect(page).to have_content('You have 1 task.')
           expect(page).to have_content task.title
           expect(page).not_to have_content task.content
           expect(page).to have_content task.status
           expect(page).not_to have_content task.deadline
+          expect(page).to have_link('Show')
+          expect(page).to have_link('Edit')
+          expect(page).to have_link('Destroy')
         end
       end
     end
