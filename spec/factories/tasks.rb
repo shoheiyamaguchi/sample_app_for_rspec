@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :task do
-    sequence(:title) { 'title_1' }
+    sequence(:title) { |n| "title_#{n}" }
     content { 'content' }
     status { :todo }
     deadline { 1.week.from_now }
