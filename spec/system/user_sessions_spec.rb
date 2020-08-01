@@ -1,10 +1,10 @@
 require 'rails_helper'
 
 RSpec.describe 'UserSessions', type: :system do
+  let(:user) { create(:user) }
   describe 'ログイン前' do
     context 'フォームの入力値が正常' do
       it 'ログイン処理が成功する' do
-        user = create(:user)
         login(user)
       end
     end
@@ -15,6 +15,7 @@ RSpec.describe 'UserSessions', type: :system do
         fill_in 'password', with: ''
         click_button 'Login'
         expect(page).to have_content 'Login failed'
+        expect(current_path).to eq login_path
       end
     end
   end
@@ -22,7 +23,6 @@ RSpec.describe 'UserSessions', type: :system do
   describe 'ログイン後' do
     context 'ログアウトボタンをクリック' do
       it 'ログアウト処理が成功する' do
-        user = create(:user)
         login(user)
         click_link 'Logout'
         expect(page).to have_content 'Logged out'
