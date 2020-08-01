@@ -5,6 +5,7 @@ module LoginModule
     fill_in 'password', with: 'password'
     click_button 'Login'
     expect(page).to have_content 'Login successful'
+    expect(current_path).to eq root_path
   end
 end
 
