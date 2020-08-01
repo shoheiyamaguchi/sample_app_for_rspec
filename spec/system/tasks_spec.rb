@@ -75,38 +75,50 @@ RSpec.describe 'Tasks', type: :system do
       end
     end
 
-    describe 'タスク編集' do
-      let(:task) { create(:task) }
+    describe 'タスク編集', focus: true do
       context 'フォームの入力値が正常' do
         it 'タスクの編集が成功する' do
-          expect {
-            click_link 'New Task'
-            fill_in 'Title', with: 'hoge'
-            fill_in 'Content', with: 'hoge'
-            click_button 'Create Task'
-            expect(page).to have_content 'Task was successfully created'
-          }.to change(user.tasks, :count).by(1)
+          task = create(:task, user: user)
+          visit task_path(task)
           click_link 'Edit'
-          expect(page).to have_field 'Title', with: 'hoge'
-          expect(page).to have_field 'Content', with: 'hoge'
-          fill_in 'Content', with: 'hogehoge'
+          expect(current_path).to eq edit_task_path(task)
+          expect(page).to have_field 'Title', with: task.title
+          expect(page).to have_field 'Content', with: task.content
+          expect(page).to have_field 'Status', with: task.status
+          fill_in 'Title', with: 'test_title'
           click_button 'Update Task'
+          expect(current_path).to eq task_path(task)
           expect(page).to have_content 'Task was successfully updated.'
         end
       end
 
       context 'タイトルが未入力' do
         it 'タスクの編集が失敗する' do
+          task = create(:task, user: user)
+          visit edit_task_path(task)
+          fill_in 'Title', with: ''
+          click_button 'Update Task'
+          expect(page).to have_content "Title can't be blank"
         end
       end
 
       context '登録済みのタイトルを使用' do
         it 'タスクの編集が失敗する' do
+          task = create(:task, user: user)
+          task_with_duplicate_title = create(:task, user: user)
+          visit edit_task_path(task_with_duplicate_title)
+          fill_in 'Title', with: task.title
+          click_button 'Update Task'
+          expect(page).to have_content 'Title has already been taken'
         end
       end
 
       context '他ユーザーのタスクの編集ページにアクセス' do
         it '編集ページへのアクセスが失敗する' do
+          task_belogs_to_another_user = create(:task)
+          visit edit_task_path(task_belogs_to_another_user)
+          expect(current_path).to eq root_path
+          expect(page).to have_content 'Forbidden access.'
         end
       end
     end
